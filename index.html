@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#EDEFF1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Кредит">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/favicon-32.png">
+<title>Кредитный калькулятор — аннуитетные платежи</title>
+<style>
+  :root{
+    --ink:#17232E;
+    --slate:#2E4A5F;
+    --amber:#B9762A;
+    --paper:#EDEFF1;
+    --surface:#FFFFFF;
+    --muted:#657580;
+    --line:#D6DBDF;
+    --focus:#2E4A5F;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-size:16px;
+    line-height:1.45;
+    font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;
+    padding:calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));}
+  body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+  input,button{font-family:inherit}
+
+  h1{font-size:1.25rem;font-weight:600;margin:0 0 4px;letter-spacing:-0.01em}
+  .sub{color:var(--muted);font-size:.875rem;margin:0 0 24px}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 16px}
+  .panel + .panel{margin-top:14px}
+
+  .field{padding:14px 0}
+  .field + .field{border-top:1px solid var(--line)}
+  .field:first-child{padding-top:0}
+  .field:last-child{padding-bottom:0}
+  .field-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  label{font-size:.9375rem;color:var(--muted)}
+  .value-input{
+    font:inherit;font-size:1.125rem;font-weight:600;color:var(--ink);
+    background:transparent;border:none;border-bottom:1.5px solid var(--line);
+    text-align:right;width:9ch;padding:2px 0;
+  }
+  .value-input.short{width:5ch}
+  .value-input:focus{outline:none;border-bottom-color:var(--focus)}
+  .value-input:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:2px}
+  .unit{color:var(--muted);font-size:.9375rem;margin-left:4px}
+  .row-end{display:flex;align-items:baseline}
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:32px;margin:6px 0 0;
+    background:transparent;display:block;touch-action:none;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--line);border-radius:2px}
+  input[type=range]::-moz-range-track{height:3px;background:var(--line);border-radius:2px}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;
+    background:var(--surface);border:2px solid var(--slate);margin-top:-12px;cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:24px;height:24px;border-radius:50%;background:var(--surface);
+    border:2px solid var(--slate);cursor:pointer;
+  }
+  input[type=range]:focus-visible{outline:2px solid var(--focus);outline-offset:4px;border-radius:4px}
+
+  .hero{margin-top:14px;background:var(--ink);color:#fff;border-radius:14px;padding:20px 18px}
+  .hero .cap{font-size:.875rem;color:#A9B7C2;margin:0}
+  .payment{font-size:2.5rem;font-weight:600;letter-spacing:-0.02em;margin:2px 0 0;line-height:1.1}
+  .payment .cur{font-size:1.5rem;font-weight:400;color:#A9B7C2;margin-left:6px}
+
+  .split{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:18px 0 10px;background:#33454F}
+  .split .body{background:#7FA3BC}
+  .split .int{background:var(--amber)}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.875rem;color:#C3CED6}
+  .legend b{color:#fff;font-weight:600}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:1px}
+  .dot.body{background:#7FA3BC}
+  .dot.int{background:var(--amber)}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:14px}
+  .stat{background:var(--surface);padding:14px 16px}
+  .stat span{display:block;font-size:.8125rem;color:var(--muted)}
+  .stat strong{display:block;font-size:1.0625rem;font-weight:600;margin-top:2px}
+
+  .chart-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:2px}
+  h2{font-size:.9375rem;font-weight:600;margin:0}
+  .hint{font-size:.8125rem;color:var(--muted)}
+  svg{display:block;width:100%;height:auto;touch-action:pan-y}
+  .readout{display:flex;flex-wrap:wrap;gap:14px;font-size:.8125rem;color:var(--muted);margin-top:8px;min-height:20px}
+  .readout b{color:var(--ink);font-weight:600}
+
+  details{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  summary{padding:16px;font-size:.9375rem;font-weight:500;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:'+';color:var(--muted);font-size:1.25rem;line-height:1}
+  details[open] summary::after{content:'–'}
+  summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+  .scroll{max-height:60vh;overflow:auto;border-top:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:.8125rem}
+  th,td{padding:8px 10px;text-align:right;white-space:nowrap}
+  th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:500;border-bottom:1px solid var(--line);text-align:right}
+  th:first-child,td:first-child{text-align:left;color:var(--muted)}
+  tbody tr:nth-child(even){background:#F7F8F9}
+  td.int{color:var(--amber)}
+
+  .note{font-size:.8125rem;color:var(--muted);margin-top:18px}
+
+  @media (max-width:400px){
+    .payment{font-size:2.125rem}
+    .stats{grid-template-columns:1fr}
+    th,td{padding:8px 7px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Кредитный калькулятор</h1>
+  <p class="sub">Аннуитетные платежи: одинаковая сумма каждый месяц, доля процентов убывает.</p>
+
+  <div class="panel">
+    <div class="field">
+      <div class="field-head">
+        <label for="amount">Сумма кредита</label>
+        <div class="row-end">
+          <input class="value-input" id="amount" type="text" inputmode="numeric" value="3 000 000">
+          <span class="unit">₽</span>
+        </div>
+      </div>
+      <input type="range" id="amountRange" min="50000" max="30000000" step="50000" value="3000000" aria-label="Сумма кредита, ползунок">
+    </div>
+
+    <div class="field">
+      <div class="field-head">
+        <label for="term">Срок</label>
+        <div class="row-end">
+          <input class="value-input short" id="term" type="text" inputmode="decimal" value="5">
+          <span class="unit" id="termUnit">лет</span>
+        </div>
+      </div>
+      <input type="range" id="termRange" min="0.5" max="30" step="0.5" value="5" aria-label="Срок в годах, ползунок">
+      <div class="hint" id="termMonths" style="margin-top:6px">60 платежей</div>
+    </div>
+
+    <div class="field">
+      <div class="field-head">
+        <label for="rate">Ставка</label>
+        <div class="row-end">
+          <input class="value-input short" id="rate" type="text" inputmode="decimal" value="18,5">
+          <span class="unit">% годовых</span>
+        </div>
+      </div>
+      <input type="range" id="rateRange" min="0" max="60" step="0.1" value="18.5" aria-label="Ставка в процентах годовых, ползунок">
+    </div>
+  </div>
+
+  <div class="hero">
+    <p class="cap">Ежемесячный платёж</p>
+    <p class="payment"><span id="payment">—</span><span class="cur">₽</span></p>
+    <div class="split" aria-hidden="true">
+      <div class="body" id="barBody" style="width:60%"></div>
+      <div class="int" id="barInt" style="width:40%"></div>
+    </div>
+    <div class="legend">
+      <div><span class="dot body"></span>Основной долг <b id="legendBody">—</b></div>
+      <div><span class="dot int"></span>Проценты <b id="legendInt">—</b></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span>Всего выплат</span><strong id="total">—</strong></div>
+    <div class="stat"><span>Переплата</span><strong id="over">—</strong></div>
+    <div class="stat"><span>Переплата к сумме</span><strong id="overPct">—</strong></div>
+    <div class="stat"><span>Последний платёж</span><strong id="last">—</strong></div>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <div class="chart-head">
+      <h2>Из чего состоит платёж</h2>
+      <span class="hint">проведите по графику</span>
+    </div>
+    <svg id="chart" viewBox="0 0 340 150" role="img" aria-label="Состав ежемесячного платежа по месяцам"></svg>
+    <div class="readout" id="readout"></div>
+  </div>
+
+  <details>
+    <summary>График платежей<span></span></summary>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Мес.</th><th>Платёж</th><th>Проценты</th><th>Долг</th><th>Остаток</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <p class="note">Расчёт по формуле аннуитета: P = S · i / (1 − (1 + i)<sup>−n</sup>), где i — месячная ставка. Комиссии и страховка не учитываются.</p>
+</div>
+
+<script>
+(function(){
+  var fmt0 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+  var fmt2 = new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  var el = function(id){ return document.getElementById(id); };
+  var amount = el('amount'), term = el('term'), rate = el('rate');
+  var amountRange = el('amountRange'), termRange = el('termRange'), rateRange = el('rateRange');
+  var chart = el('chart'), readout = el('readout');
+
+  var state = {S:3000000, y:5, r:18.5};
+  function months(){ return Math.max(1, Math.round(state.y*12)); }
+  function payWord(n){
+    var t = n % 100, d = n % 10;
+    if (t > 10 && t < 20) return 'платежей';
+    if (d === 1) return 'платёж';
+    if (d >= 2 && d <= 4) return 'платежа';
+    return 'платежей';
+  }
+  function yearWord(y){
+    var n = Math.floor(y) % 100, d = n % 10;
+    if (y !== Math.floor(y)) return 'года';
+    if (n > 10 && n < 20) return 'лет';
+    if (d === 1) return 'год';
+    if (d >= 2 && d <= 4) return 'года';
+    return 'лет';
+  }
+  var schedule = [];
+
+  function parseNum(str){
+    var v = String(str).replace(/\s|\u00A0/g,'').replace(',', '.').replace(/[^\d.]/g,'');
+    var num = parseFloat(v);
+    return isNaN(num) ? 0 : num;
+  }
+  function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
+
+  function build(){
+    var S = state.S, n = months(), i = state.r/100/12;
+    var pay = i === 0 ? S/n : S*i/(1-Math.pow(1+i,-n));
+    var bal = S, rows = [];
+    for (var m=1; m<=n; m++){
+      var interest = bal*i;
+      var principal = (m === n) ? bal : pay - interest;
+      var payment = principal + interest;
+      bal = Math.max(0, bal - principal);
+      rows.push({m:m, payment:payment, interest:interest, principal:principal, balance:bal});
+    }
+    schedule = rows;
+    return pay;
+  }
+
+  function render(){
+    var pay = build();
+    var first = schedule[0], last = schedule[schedule.length-1];
+    var total = schedule.reduce(function(a,r){ return a + r.payment; }, 0);
+    var over = total - state.S;
+
+    el('payment').textContent = fmt2.format(pay);
+    el('total').textContent = fmt0.format(total) + ' ₽';
+    el('over').textContent = fmt0.format(over) + ' ₽';
+    el('overPct').textContent = fmt0.format(over/state.S*100) + ' %';
+    el('last').textContent = fmt2.format(last.payment) + ' ₽';
+
+    var shareInt = first.payment > 0 ? first.interest/first.payment*100 : 0;
+    el('barBody').style.width = (100-shareInt) + '%';
+    el('barInt').style.width = shareInt + '%';
+    el('legendBody').textContent = fmt0.format(first.principal) + ' ₽';
+    el('legendInt').textContent = fmt0.format(first.interest) + ' ₽';
+
+    drawChart();
+    drawTable();
+    setReadout(0);
+  }
+
+  function drawChart(){
+    var W=340, H=150, padL=6, padR=6, padB=18, padT=6;
+    var n = schedule.length;
+    var maxPay = Math.max.apply(null, schedule.map(function(r){ return r.payment; }));
+    var x = function(k){ return padL + (n<2 ? (W-padL-padR)/2 : k*(W-padL-padR)/(n-1)); };
+    var y = function(v){ return H-padB - (maxPay ? v/maxPay*(H-padB-padT) : 0); };
+
+    var topLine='', intLine='';
+    schedule.forEach(function(r,k){
+      topLine += (k?'L':'M') + x(k).toFixed(1) + ' ' + y(r.payment).toFixed(1) + ' ';
+      intLine += (k?'L':'M') + x(k).toFixed(1) + ' ' + y(r.interest).toFixed(1) + ' ';
+    });
+    var base = 'L' + x(n-1).toFixed(1) + ' ' + y(0) + ' L' + x(0).toFixed(1) + ' ' + y(0) + ' Z';
+
+    var ticks = '';
+    var step = n <= 12 ? Math.max(1, Math.ceil(n/4)) : (n <= 60 ? 12 : (n <= 180 ? 24 : 60));
+    for (var m=step; m<n; m+=step){
+      ticks += '<text x="'+x(m-1).toFixed(1)+'" y="'+(H-5)+'" fill="#657580" font-size="8" text-anchor="middle">'+m+'</text>';
+    }
+
+    chart.innerHTML =
+      '<path d="'+topLine+base+'" fill="#7FA3BC"/>' +
+      '<path d="'+intLine+base+'" fill="#B9762A"/>' +
+      '<line x1="'+padL+'" y1="'+y(0)+'" x2="'+(W-padR)+'" y2="'+y(0)+'" stroke="#D6DBDF"/>' +
+      ticks +
+      '<text x="'+padL+'" y="'+(H-5)+'" fill="#657580" font-size="8">1</text>' +
+      '<text x="'+(W-padR)+'" y="'+(H-5)+'" fill="#657580" font-size="8" text-anchor="end">'+n+' мес.</text>' +
+      '<line id="cross" x1="0" y1="'+padT+'" x2="0" y2="'+y(0)+'" stroke="#17232E" stroke-width="1" opacity="0"/>';
+  }
+
+  function setReadout(k){
+    var r = schedule[k];
+    if(!r) return;
+    readout.innerHTML =
+      'Месяц <b>'+r.m+'</b>' +
+      '<span>проценты <b>'+fmt0.format(r.interest)+' ₽</b></span>' +
+      '<span>основной долг <b>'+fmt0.format(r.principal)+' ₽</b></span>' +
+      '<span>остаток <b>'+fmt0.format(r.balance)+' ₽</b></span>';
+  }
+
+  function pointerMove(e){
+    var rect = chart.getBoundingClientRect();
+    var cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    var ratio = clamp(cx/rect.width, 0, 1);
+    var k = Math.round(ratio*(schedule.length-1));
+    setReadout(k);
+    var cross = document.getElementById('cross');
+    if(cross){
+      var W=340, padL=6, padR=6, n=schedule.length;
+      var xp = padL + (n<2 ? (W-padL-padR)/2 : k*(W-padL-padR)/(n-1));
+      cross.setAttribute('x1', xp); cross.setAttribute('x2', xp);
+      cross.setAttribute('opacity','0.35');
+    }
+  }
+  chart.addEventListener('mousemove', pointerMove);
+  chart.addEventListener('touchmove', pointerMove, {passive:true});
+  chart.addEventListener('touchstart', pointerMove, {passive:true});
+  chart.addEventListener('mouseleave', function(){
+    var cross = document.getElementById('cross');
+    if(cross) cross.setAttribute('opacity','0');
+    setReadout(0);
+  });
+
+  function drawTable(){
+    var html = '';
+    schedule.forEach(function(r){
+      html += '<tr><td>'+r.m+'</td><td>'+fmt0.format(r.payment)+'</td><td class="int">'+fmt0.format(r.interest)+
+              '</td><td>'+fmt0.format(r.principal)+'</td><td>'+fmt0.format(r.balance)+'</td></tr>';
+    });
+    el('rows').innerHTML = html;
+  }
+
+  // --- связка полей и ползунков ---
+  function syncFromFields(){
+    amountRange.value = clamp(state.S, +amountRange.min, +amountRange.max);
+    termRange.value   = clamp(state.y, +termRange.min, +termRange.max);
+    rateRange.value   = clamp(state.r, +rateRange.min, +rateRange.max);
+  }
+  function showFields(){
+    amount.value = fmt0.format(state.S);
+    term.value = String(state.y).replace('.', ',');
+    rate.value = String(state.r).replace('.', ',');
+    el('termUnit').textContent = yearWord(state.y);
+    el('termMonths').textContent = months() + ' ' + payWord(months());
+  }
+
+  // при тапе по полю выделяем значение целиком — набранное заменяет старое
+  [amount, term, rate].forEach(function(input){
+    var selectAll = function(){
+      setTimeout(function(){ try { input.setSelectionRange(0, input.value.length); } catch(e){} }, 0);
+    };
+    input.addEventListener('focus', selectAll);
+    input.addEventListener('click', function(){ if (input.selectionStart === input.selectionEnd) selectAll(); });
+  });
+
+  amount.addEventListener('input', function(){
+    var pos = amount.selectionStart, len = amount.value.length;
+    state.S = clamp(Math.round(parseNum(amount.value)), 1, 1e12);
+    amount.value = fmt0.format(state.S);
+    amount.setSelectionRange(Math.max(0, pos + amount.value.length - len), Math.max(0, pos + amount.value.length - len));
+    syncFromFields(); render();
+  });
+  term.addEventListener('input', function(){
+    var typed = parseNum(term.value);
+    if (term.value.trim() === '' || typed === 0) return;   // ждём, пока допечатают
+    state.y = clamp(Math.round(typed*2)/2, 1/12, 30);
+    el('termUnit').textContent = yearWord(state.y);
+    el('termMonths').textContent = months() + ' ' + payWord(months());
+    syncFromFields(); render();
+  });
+  term.addEventListener('blur', showFields);
+  rate.addEventListener('input', function(){
+    state.r = clamp(Math.round(parseNum(rate.value)*100)/100, 0, 200);
+    syncFromFields(); render();
+  });
+  rate.addEventListener('blur', showFields);
+
+  amountRange.addEventListener('input', function(){ state.S = +this.value; showFields(); render(); });
+  termRange.addEventListener('input',   function(){ state.y = +this.value; showFields(); render(); });
+  rateRange.addEventListener('input',   function(){ state.r = +this.value; showFields(); render(); });
+
+  showFields(); syncFromFields(); render();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
