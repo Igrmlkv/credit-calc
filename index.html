@@ -7,11 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Кредит">
+<meta name="apple-mobile-web-app-title" content="Расчёт">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/favicon-32.png">
-<title>Кредитный калькулятор — аннуитетные платежи</title>
+<title>Кредит и вклад — платежи и сложный процент</title>
 <style>
   :root{
     --ink:#17232E;
@@ -22,25 +22,43 @@
     --muted:#657580;
     --line:#D6DBDF;
     --focus:#2E4A5F;
+    --track:#E2E6E9;
+    --zebra:#F7F8F9;
+    --body-band:#7FA3BC;
+    --hero-cap:#A9B7C2;
+    --hero-legend:#C3CED6;
+    --hero-track:#33454F;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
     background:var(--paper);
     color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
     font-size:16px;
     line-height:1.45;
     font-variant-numeric:tabular-nums;
     -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+    overscroll-behavior-y:none;
   }
   .wrap{max-width:760px;margin:0 auto;
     padding:calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));}
-  body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
   input,button{font-family:inherit}
+  [hidden]{display:none!important}
 
-  h1{font-size:1.25rem;font-weight:600;margin:0 0 4px;letter-spacing:-0.01em}
-  .sub{color:var(--muted);font-size:.875rem;margin:0 0 24px}
+  h1{font-size:1.25rem;font-weight:600;margin:0;letter-spacing:-0.01em}
+  .sub{color:var(--muted);font-size:.875rem;margin:4px 0 18px;max-width:62ch}
+
+  /* ---- переключатель режимов ---- */
+  .seg{display:flex;gap:4px;background:var(--track);border:1px solid var(--line);
+    border-radius:12px;padding:4px;margin:0 0 14px}
+  .seg button{flex:1;appearance:none;-webkit-appearance:none;border:none;background:transparent;
+    border-radius:9px;padding:11px 8px;font-size:.9375rem;font-weight:500;color:var(--muted);
+    cursor:pointer;transition:background .15s,color .15s}
+  .seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);font-weight:600;
+    box-shadow:0 1px 2px rgba(23,35,46,.10)}
+  .seg button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 
   .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 16px}
   .panel + .panel{margin-top:14px}
@@ -78,22 +96,32 @@
   }
   input[type=range]:focus-visible{outline:2px solid var(--focus);outline-offset:4px;border-radius:4px}
 
-  .hero{margin-top:14px;background:var(--ink);color:#fff;border-radius:14px;padding:20px 18px}
-  .hero .cap{font-size:.875rem;color:#A9B7C2;margin:0}
-  .payment{font-size:2.5rem;font-weight:600;letter-spacing:-0.02em;margin:2px 0 0;line-height:1.1}
-  .payment .cur{font-size:1.5rem;font-weight:400;color:#A9B7C2;margin-left:6px}
+  /* ---- выбор периода капитализации ---- */
+  .seg-sm{display:flex;gap:2px;background:var(--track);border-radius:9px;padding:3px;margin-top:8px}
+  .seg-sm button{flex:1;appearance:none;-webkit-appearance:none;border:none;background:transparent;
+    border-radius:7px;padding:8px 4px;font-size:.8125rem;font-weight:500;color:var(--muted);cursor:pointer}
+  .seg-sm button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;
+    box-shadow:0 1px 2px rgba(23,35,46,.10)}
+  .seg-sm button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 
-  .split{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:18px 0 10px;background:#33454F}
-  .split .body{background:#7FA3BC}
-  .split .int{background:var(--amber)}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.875rem;color:#C3CED6}
+  .hero{margin-top:14px;background:var(--ink);color:#fff;border-radius:14px;padding:20px 18px}
+  .hero .cap{font-size:.875rem;color:var(--hero-cap);margin:0}
+  .payment{font-size:2.5rem;font-weight:600;letter-spacing:-0.02em;margin:2px 0 0;line-height:1.1}
+  .payment .cur{font-size:1.5rem;font-weight:400;color:var(--hero-cap);margin-left:6px}
+
+  .split{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:18px 0 10px;background:var(--hero-track)}
+  .split .b-body{background:var(--body-band)}
+  .split .b-int{background:var(--amber)}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.875rem;color:var(--hero-legend)}
   .legend b{color:#fff;font-weight:600}
   .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:1px}
-  .dot.body{background:#7FA3BC}
-  .dot.int{background:var(--amber)}
+  .dot.d-body{background:var(--body-band)}
+  .dot.d-int{background:var(--amber)}
 
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:14px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:14px}
   .stat{background:var(--surface);padding:14px 16px}
+  .stat.wide{grid-column:1 / -1}
   .stat span{display:block;font-size:.8125rem;color:var(--muted)}
   .stat strong{display:block;font-size:1.0625rem;font-weight:600;margin-top:2px}
 
@@ -105,7 +133,8 @@
   .readout b{color:var(--ink);font-weight:600}
 
   details{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-  summary{padding:16px;font-size:.9375rem;font-weight:500;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary{padding:16px;font-size:.9375rem;font-weight:500;cursor:pointer;list-style:none;
+    display:flex;justify-content:space-between;align-items:center;gap:10px}
   summary::-webkit-details-marker{display:none}
   summary::after{content:'+';color:var(--muted);font-size:1.25rem;line-height:1}
   details[open] summary::after{content:'–'}
@@ -113,12 +142,15 @@
   .scroll{max-height:60vh;overflow:auto;border-top:1px solid var(--line)}
   table{width:100%;border-collapse:collapse;font-size:.8125rem}
   th,td{padding:8px 10px;text-align:right;white-space:nowrap}
-  th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:500;border-bottom:1px solid var(--line);text-align:right}
+  th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:500;
+    border-bottom:1px solid var(--line);text-align:right}
   th:first-child,td:first-child{text-align:left;color:var(--muted)}
-  tbody tr:nth-child(even){background:#F7F8F9}
+  tbody tr:nth-child(even){background:var(--zebra)}
   td.int{color:var(--amber)}
+  .capdot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--amber);
+    margin-right:5px;vertical-align:2px}
 
-  .note{font-size:.8125rem;color:var(--muted);margin-top:18px}
+  .note{font-size:.8125rem;color:var(--muted);margin-top:18px;max-width:64ch}
 
   @media (max-width:400px){
     .payment{font-size:2.125rem}
@@ -130,107 +162,181 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Кредитный калькулятор</h1>
-  <p class="sub">Аннуитетные платежи: одинаковая сумма каждый месяц, доля процентов убывает.</p>
+  <h1>Кредит и вклад</h1>
+  <p class="sub" id="sub">Аннуитетные платежи: одинаковая сумма каждый месяц, доля процентов убывает.</p>
 
-  <div class="panel">
+  <div class="seg" role="tablist" aria-label="Тип расчёта">
+    <button id="tabCredit" type="button" role="tab" aria-selected="true" aria-controls="panelCredit">Кредит</button>
+    <button id="tabSave" type="button" role="tab" aria-selected="false" aria-controls="panelSave">Вклад</button>
+  </div>
+
+  <!-- ====== ввод: кредит ====== -->
+  <div class="panel" id="panelCredit" role="tabpanel" aria-labelledby="tabCredit">
     <div class="field">
       <div class="field-head">
-        <label for="amount">Сумма кредита</label>
+        <label for="cAmount">Сумма кредита</label>
         <div class="row-end">
-          <input class="value-input" id="amount" type="text" inputmode="numeric" value="3 000 000">
+          <input class="value-input" id="cAmount" type="text" inputmode="numeric" value="3 000 000">
           <span class="unit">₽</span>
         </div>
       </div>
-      <input type="range" id="amountRange" min="50000" max="30000000" step="50000" value="3000000" aria-label="Сумма кредита, ползунок">
+      <input type="range" id="cAmountRange" min="50000" max="30000000" step="50000" value="3000000" aria-label="Сумма кредита, ползунок">
     </div>
 
     <div class="field">
       <div class="field-head">
-        <label for="term">Срок</label>
+        <label for="cTerm">Срок</label>
         <div class="row-end">
-          <input class="value-input short" id="term" type="text" inputmode="decimal" value="5">
-          <span class="unit" id="termUnit">лет</span>
+          <input class="value-input short" id="cTerm" type="text" inputmode="decimal" value="5">
+          <span class="unit" id="cTermUnit">лет</span>
         </div>
       </div>
-      <input type="range" id="termRange" min="0.5" max="30" step="0.5" value="5" aria-label="Срок в годах, ползунок">
-      <div class="hint" id="termMonths" style="margin-top:6px">60 платежей</div>
+      <input type="range" id="cTermRange" min="0.5" max="30" step="0.5" value="5" aria-label="Срок кредита в годах, ползунок">
+      <div class="hint" id="cTermMonths" style="margin-top:6px">60 платежей</div>
     </div>
 
     <div class="field">
       <div class="field-head">
-        <label for="rate">Ставка</label>
+        <label for="cRate">Ставка</label>
         <div class="row-end">
-          <input class="value-input short" id="rate" type="text" inputmode="decimal" value="18,5">
+          <input class="value-input short" id="cRate" type="text" inputmode="decimal" value="18,5">
           <span class="unit">% годовых</span>
         </div>
       </div>
-      <input type="range" id="rateRange" min="0" max="60" step="0.1" value="18.5" aria-label="Ставка в процентах годовых, ползунок">
+      <input type="range" id="cRateRange" min="0" max="60" step="0.1" value="18.5" aria-label="Ставка в процентах годовых, ползунок">
     </div>
   </div>
 
+  <!-- ====== ввод: вклад ====== -->
+  <div class="panel" id="panelSave" role="tabpanel" aria-labelledby="tabSave" hidden>
+    <div class="field">
+      <div class="field-head">
+        <label for="dAmount">Начальная сумма</label>
+        <div class="row-end">
+          <input class="value-input" id="dAmount" type="text" inputmode="numeric" value="500 000">
+          <span class="unit">₽</span>
+        </div>
+      </div>
+      <input type="range" id="dAmountRange" min="0" max="5000000" step="10000" value="500000" aria-label="Начальная сумма, ползунок">
+    </div>
+
+    <div class="field">
+      <div class="field-head">
+        <label for="dPmt">Пополнение</label>
+        <div class="row-end">
+          <input class="value-input" id="dPmt" type="text" inputmode="numeric" value="20 000">
+          <span class="unit">₽ / мес</span>
+        </div>
+      </div>
+      <input type="range" id="dPmtRange" min="0" max="200000" step="1000" value="20000" aria-label="Ежемесячное пополнение, ползунок">
+      <div class="hint" id="dPmtHint" style="margin-top:6px">240 000 ₽ в год</div>
+    </div>
+
+    <div class="field">
+      <div class="field-head">
+        <label for="dTerm">Срок</label>
+        <div class="row-end">
+          <input class="value-input short" id="dTerm" type="text" inputmode="decimal" value="10">
+          <span class="unit" id="dTermUnit">лет</span>
+        </div>
+      </div>
+      <input type="range" id="dTermRange" min="0.5" max="30" step="0.5" value="10" aria-label="Срок вклада в годах, ползунок">
+      <div class="hint" id="dTermMonths" style="margin-top:6px">120 месяцев</div>
+    </div>
+
+    <div class="field">
+      <div class="field-head">
+        <label for="dRate">Ставка</label>
+        <div class="row-end">
+          <input class="value-input short" id="dRate" type="text" inputmode="decimal" value="16">
+          <span class="unit">% годовых</span>
+        </div>
+      </div>
+      <input type="range" id="dRateRange" min="0" max="40" step="0.1" value="16" aria-label="Ставка в процентах годовых, ползунок">
+    </div>
+
+    <div class="field">
+      <label id="capLabel">Капитализация</label>
+      <div class="seg-sm" role="group" aria-labelledby="capLabel">
+        <button type="button" data-cap="1" aria-pressed="true">мес.</button>
+        <button type="button" data-cap="3" aria-pressed="false">кв.</button>
+        <button type="button" data-cap="6" aria-pressed="false">½ года</button>
+        <button type="button" data-cap="12" aria-pressed="false">год</button>
+      </div>
+      <div class="hint" id="capHint" style="margin-top:8px">Проценты прибавляются к вкладу каждый месяц и дальше работают сами.</div>
+    </div>
+  </div>
+
+  <!-- ====== результат ====== -->
   <div class="hero">
-    <p class="cap">Ежемесячный платёж</p>
-    <p class="payment"><span id="payment">—</span><span class="cur">₽</span></p>
+    <p class="cap" id="heroCap">Ежемесячный платёж</p>
+    <p class="payment"><span id="heroValue">—</span><span class="cur">₽</span></p>
     <div class="split" aria-hidden="true">
-      <div class="body" id="barBody" style="width:60%"></div>
-      <div class="int" id="barInt" style="width:40%"></div>
+      <div class="b-body" id="barBody" style="width:60%"></div>
+      <div class="b-int" id="barInt" style="width:40%"></div>
     </div>
     <div class="legend">
-      <div><span class="dot body"></span>Основной долг <b id="legendBody">—</b></div>
-      <div><span class="dot int"></span>Проценты <b id="legendInt">—</b></div>
+      <div><span class="dot d-body"></span><span id="legendBodyLabel">Основной долг</span> <b id="legendBody">—</b></div>
+      <div><span class="dot d-int"></span><span id="legendIntLabel">Проценты</span> <b id="legendInt">—</b></div>
     </div>
   </div>
 
   <div class="stats">
-    <div class="stat"><span>Всего выплат</span><strong id="total">—</strong></div>
-    <div class="stat"><span>Переплата</span><strong id="over">—</strong></div>
-    <div class="stat"><span>Переплата к сумме</span><strong id="overPct">—</strong></div>
-    <div class="stat"><span>Последний платёж</span><strong id="last">—</strong></div>
+    <div class="stat"><span id="s1l">Всего выплат</span><strong id="s1">—</strong></div>
+    <div class="stat"><span id="s2l">Переплата</span><strong id="s2">—</strong></div>
+    <div class="stat"><span id="s3l">Переплата к сумме</span><strong id="s3">—</strong></div>
+    <div class="stat"><span id="s4l">Последний платёж</span><strong id="s4">—</strong></div>
+    <div class="stat wide" id="stat5" hidden><span id="s5l">Доход за последний месяц срока</span><strong id="s5">—</strong></div>
   </div>
 
   <div class="panel" style="margin-top:14px">
     <div class="chart-head">
-      <h2>Из чего состоит платёж</h2>
+      <h2 id="chartTitle">Из чего состоит платёж</h2>
       <span class="hint">проведите по графику</span>
     </div>
-    <svg id="chart" viewBox="0 0 340 150" role="img" aria-label="Состав ежемесячного платежа по месяцам"></svg>
+    <svg id="chart" viewBox="0 0 340 150" role="img" aria-labelledby="chartTitle"></svg>
     <div class="readout" id="readout"></div>
   </div>
 
   <details>
-    <summary>График платежей<span></span></summary>
+    <summary><span id="tableTitle">График платежей</span></summary>
     <div class="scroll">
       <table>
-        <thead>
-          <tr><th>Мес.</th><th>Платёж</th><th>Проценты</th><th>Долг</th><th>Остаток</th></tr>
-        </thead>
+        <thead><tr id="thead"></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
   </details>
 
-  <p class="note">Расчёт по формуле аннуитета: P = S · i / (1 − (1 + i)<sup>−n</sup>), где i — месячная ставка. Комиссии и страховка не учитываются.</p>
+  <p class="note" id="note"></p>
 </div>
 
 <script>
 (function(){
   var fmt0 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+  var fmt1 = new Intl.NumberFormat('ru-RU',{minimumFractionDigits:1,maximumFractionDigits:1});
   var fmt2 = new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-  var el = function(id){ return document.getElementById(id); };
-  var amount = el('amount'), term = el('term'), rate = el('rate');
-  var amountRange = el('amountRange'), termRange = el('termRange'), rateRange = el('rateRange');
-  var chart = el('chart'), readout = el('readout');
-
-  var state = {S:3000000, y:5, r:18.5};
-  function months(){ return Math.max(1, Math.round(state.y*12)); }
+  function el(id){ return document.getElementById(id); }
+  function clamp(v,a,b){ return Math.min(b, Math.max(a, v)); }
+  function parseNum(str){
+    var v = String(str).replace(/\s| /g,'').replace(',', '.').replace(/[^\d.]/g,'');
+    var n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+  }
   function payWord(n){
     var t = n % 100, d = n % 10;
     if (t > 10 && t < 20) return 'платежей';
     if (d === 1) return 'платёж';
     if (d >= 2 && d <= 4) return 'платежа';
     return 'платежей';
+  }
+  function monthWord(n){
+    var t = n % 100, d = n % 10;
+    if (t > 10 && t < 20) return 'месяцев';
+    if (d === 1) return 'месяц';
+    if (d >= 2 && d <= 4) return 'месяца';
+    return 'месяцев';
   }
   function yearWord(y){
     var n = Math.floor(y) % 100, d = n % 10;
@@ -240,175 +346,336 @@
     if (d >= 2 && d <= 4) return 'года';
     return 'лет';
   }
-  var schedule = [];
+  function num(v){ return v === Math.floor(v) ? String(v) : fmt1.format(v); }
 
-  function parseNum(str){
-    var v = String(str).replace(/\s|\u00A0/g,'').replace(',', '.').replace(/[^\d.]/g,'');
-    var num = parseFloat(v);
-    return isNaN(num) ? 0 : num;
-  }
-  function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
+  var CREDIT = {S:3000000, y:5, r:18.5};
+  var SAVE   = {S:500000, pmt:20000, y:10, r:16, cap:1};
+  var mode = 'credit';
+  var rows = [];      // график активного режима
+  var view = {};      // ряды и цвета для графика
 
-  function build(){
-    var S = state.S, n = months(), i = state.r/100/12;
+  function cMonths(){ return Math.max(1, Math.round(CREDIT.y*12)); }
+  function dMonths(){ return Math.max(1, Math.round(SAVE.y*12)); }
+
+  // ---------- расчёт ----------
+  function buildCredit(){
+    var S = CREDIT.S, n = cMonths(), i = CREDIT.r/100/12;
     var pay = i === 0 ? S/n : S*i/(1-Math.pow(1+i,-n));
-    var bal = S, rows = [];
+    var bal = S, out = [];
     for (var m=1; m<=n; m++){
       var interest = bal*i;
       var principal = (m === n) ? bal : pay - interest;
-      var payment = principal + interest;
       bal = Math.max(0, bal - principal);
-      rows.push({m:m, payment:payment, interest:interest, principal:principal, balance:bal});
+      out.push({m:m, payment:principal+interest, interest:interest, principal:principal, balance:bal});
     }
-    schedule = rows;
-    return pay;
+    return {pay:pay, rows:out};
   }
 
-  function render(){
-    var pay = build();
-    var first = schedule[0], last = schedule[schedule.length-1];
-    var total = schedule.reduce(function(a,r){ return a + r.payment; }, 0);
-    var over = total - state.S;
+  // Проценты копятся на остаток каждый месяц и прибавляются к вкладу
+  // в конце периода капитализации. Пополнение — в начале месяца.
+  function buildSave(){
+    var n = dMonths(), i = SAVE.r/100/12, cap = SAVE.cap;
+    var bal = SAVE.S, acc = 0, invested = SAVE.S, out = [];
+    for (var m=1; m<=n; m++){
+      bal += SAVE.pmt;
+      invested += SAVE.pmt;
+      var gain = bal*i;
+      acc += gain;
+      var capped = (m % cap === 0);
+      if (capped){ bal += acc; acc = 0; }
+      out.push({m:m, add:SAVE.pmt, interest:gain, invested:invested, balance:bal+acc, cap:capped});
+    }
+    return {rows:out, invested:invested, total:out[out.length-1].balance};
+  }
 
-    el('payment').textContent = fmt2.format(pay);
-    el('total').textContent = fmt0.format(total) + ' ₽';
-    el('over').textContent = fmt0.format(over) + ' ₽';
-    el('overPct').textContent = fmt0.format(over/state.S*100) + ' %';
-    el('last').textContent = fmt2.format(last.payment) + ' ₽';
+  // ---------- вывод ----------
+  function renderCredit(){
+    var r = buildCredit();
+    rows = r.rows;
+    var first = rows[0], last = rows[rows.length-1];
+    var total = rows.reduce(function(a,x){ return a + x.payment; }, 0);
+    var over = total - CREDIT.S;
+
+    el('sub').textContent = 'Аннуитетные платежи: одинаковая сумма каждый месяц, доля процентов убывает.';
+    el('heroCap').textContent = 'Ежемесячный платёж';
+    el('heroValue').textContent = fmt2.format(r.pay);
 
     var shareInt = first.payment > 0 ? first.interest/first.payment*100 : 0;
     el('barBody').style.width = (100-shareInt) + '%';
     el('barInt').style.width = shareInt + '%';
+    el('legendBodyLabel').textContent = 'Основной долг';
+    el('legendIntLabel').textContent = 'Проценты';
     el('legendBody').textContent = fmt0.format(first.principal) + ' ₽';
     el('legendInt').textContent = fmt0.format(first.interest) + ' ₽';
 
+    stat(1,'Всего выплат', fmt0.format(total) + ' ₽');
+    stat(2,'Переплата', fmt0.format(over) + ' ₽');
+    stat(3,'Переплата к сумме', fmt0.format(over/CREDIT.S*100) + ' %');
+    stat(4,'Последний платёж', fmt2.format(last.payment) + ' ₽');
+    el('stat5').hidden = true;
+
+    el('chartTitle').textContent = 'Из чего состоит платёж';
+    el('tableTitle').textContent = 'График платежей';
+    el('thead').innerHTML = '<th>Мес.</th><th>Платёж</th><th>Проценты</th><th>Долг</th><th>Остаток</th>';
+    el('note').innerHTML = 'Расчёт по формуле аннуитета: P = S · i / (1 − (1 + i)<sup>−n</sup>), где i — месячная ставка. ' +
+      'Комиссии и страховка не учитываются.';
+
+    view = {
+      outer: rows.map(function(x){ return x.payment; }),
+      inner: rows.map(function(x){ return x.interest; }),
+      outerColor: '#7FA3BC',
+      innerColor: '#B9762A'
+    };
     drawChart();
-    drawTable();
+    el('rows').innerHTML = rows.map(function(x){
+      return '<tr><td>'+x.m+'</td><td>'+fmt0.format(x.payment)+'</td><td class="int">'+fmt0.format(x.interest)+
+             '</td><td>'+fmt0.format(x.principal)+'</td><td>'+fmt0.format(x.balance)+'</td></tr>';
+    }).join('');
     setReadout(0);
   }
 
-  function drawChart(){
-    var W=340, H=150, padL=6, padR=6, padB=18, padT=6;
-    var n = schedule.length;
-    var maxPay = Math.max.apply(null, schedule.map(function(r){ return r.payment; }));
-    var x = function(k){ return padL + (n<2 ? (W-padL-padR)/2 : k*(W-padL-padR)/(n-1)); };
-    var y = function(v){ return H-padB - (maxPay ? v/maxPay*(H-padB-padT) : 0); };
+  function renderSave(){
+    var r = buildSave();
+    rows = r.rows;
+    var gained = r.total - r.invested;
+    var i = SAVE.r/100/12;
+    var eff = (Math.pow(1 + SAVE.cap*i, 12/SAVE.cap) - 1) * 100;
 
-    var topLine='', intLine='';
-    schedule.forEach(function(r,k){
-      topLine += (k?'L':'M') + x(k).toFixed(1) + ' ' + y(r.payment).toFixed(1) + ' ';
-      intLine += (k?'L':'M') + x(k).toFixed(1) + ' ' + y(r.interest).toFixed(1) + ' ';
-    });
-    var base = 'L' + x(n-1).toFixed(1) + ' ' + y(0) + ' L' + x(0).toFixed(1) + ' ' + y(0) + ' Z';
+    el('sub').textContent = 'Сложный процент: начисленные проценты остаются во вкладе и сами начинают приносить доход.';
+    el('heroCap').textContent = 'Сумма в конце срока';
+    el('heroValue').textContent = fmt0.format(r.total);
+
+    var shareInt = r.total > 0 ? gained/r.total*100 : 0;
+    el('barBody').style.width = (100-shareInt) + '%';
+    el('barInt').style.width = shareInt + '%';
+    el('legendBodyLabel').textContent = 'Свои деньги';
+    el('legendIntLabel').textContent = 'Проценты';
+    el('legendBody').textContent = fmt0.format(r.invested) + ' ₽';
+    el('legendInt').textContent = fmt0.format(gained) + ' ₽';
+
+    stat(1,'Вложено', fmt0.format(r.invested) + ' ₽');
+    stat(2,'Начислено процентов', fmt0.format(gained) + ' ₽');
+    stat(3,'Доход к вложениям', fmt0.format(r.invested > 0 ? gained/r.invested*100 : 0) + ' %');
+    stat(4,'Эффективная ставка', fmt1.format(eff) + ' % годовых');
+    stat(5,'Доход за последний месяц срока', fmt0.format(rows[rows.length-1].interest) + ' ₽');
+    el('stat5').hidden = false;
+
+    el('chartTitle').textContent = 'Как растёт вклад';
+    el('tableTitle').textContent = 'По месяцам';
+    el('thead').innerHTML = '<th>Мес.</th><th>Взнос</th><th>Проценты</th><th>Вложено</th><th>Баланс</th>';
+    el('note').innerHTML = 'Проценты начисляются на остаток каждый месяц и прибавляются к вкладу в конце периода ' +
+      'капитализации — при квартальной, полугодовой и годовой в таблице такие месяцы помечены точкой. Пополнение ' +
+      'вносится в начале месяца и работает уже в текущем месяце. Налог на доход и инфляция не учитываются.';
+
+    view = {
+      outer: rows.map(function(x){ return x.balance; }),
+      inner: rows.map(function(x){ return x.invested; }),
+      outerColor: '#B9762A',
+      innerColor: '#7FA3BC'
+    };
+    drawChart();
+    var marks = SAVE.cap > 1;
+    el('rows').innerHTML = rows.map(function(x){
+      var dot = (marks && x.cap) ? '<span class="capdot"></span>' : '';
+      return '<tr><td>'+dot+x.m+'</td><td>'+fmt0.format(x.add)+'</td><td class="int">'+fmt0.format(x.interest)+
+             '</td><td>'+fmt0.format(x.invested)+'</td><td>'+fmt0.format(x.balance)+'</td></tr>';
+    }).join('');
+    setReadout(0);
+  }
+
+  function stat(k, label, value){
+    el('s'+k+'l').textContent = label;
+    el('s'+k).textContent = value;
+  }
+  function render(){ mode === 'credit' ? renderCredit() : renderSave(); }
+
+  // ---------- график ----------
+  var W=340, H=150, padL=6, padR=6, padB=18, padT=6;
+  function xAt(k, n){ return padL + (n < 2 ? (W-padL-padR)/2 : k*(W-padL-padR)/(n-1)); }
+
+  function drawChart(){
+    var n = view.outer.length;
+    var max = Math.max.apply(null, view.outer) || 1;
+    function y(v){ return H-padB - v/max*(H-padB-padT); }
+
+    var pOuter='', pInner='';
+    for (var k=0; k<n; k++){
+      pOuter += (k?'L':'M') + xAt(k,n).toFixed(1) + ' ' + y(view.outer[k]).toFixed(1) + ' ';
+      pInner += (k?'L':'M') + xAt(k,n).toFixed(1) + ' ' + y(view.inner[k]).toFixed(1) + ' ';
+    }
+    var y0 = y(0).toFixed(1);
+    var base = 'L' + xAt(n-1,n).toFixed(1) + ' ' + y0 + ' L' + xAt(0,n).toFixed(1) + ' ' + y0 + ' Z';
 
     var ticks = '';
-    var step = n <= 12 ? Math.max(1, Math.ceil(n/4)) : (n <= 60 ? 12 : (n <= 180 ? 24 : 60));
-    for (var m=step; m<n; m+=step){
-      ticks += '<text x="'+x(m-1).toFixed(1)+'" y="'+(H-5)+'" fill="#657580" font-size="8" text-anchor="middle">'+m+'</text>';
+    if (n >= 24){
+      var step = 12 * Math.max(1, Math.ceil(n/12/5));
+      for (var m=step; m<n; m+=step){
+        ticks += '<text x="'+xAt(m-1,n).toFixed(1)+'" y="'+(H-5)+'" fill="#657580" font-size="8" text-anchor="middle">'+
+                 (m/12)+' г.</text>';
+      }
+    } else {
+      var s = Math.max(1, Math.ceil(n/4));
+      for (var q=s; q<n; q+=s){
+        ticks += '<text x="'+xAt(q-1,n).toFixed(1)+'" y="'+(H-5)+'" fill="#657580" font-size="8" text-anchor="middle">'+q+'</text>';
+      }
     }
+    var endLabel = n >= 24 ? (num(n/12) + ' ' + yearWord(n/12)) : (n + ' мес.');
 
-    chart.innerHTML =
-      '<path d="'+topLine+base+'" fill="#7FA3BC"/>' +
-      '<path d="'+intLine+base+'" fill="#B9762A"/>' +
-      '<line x1="'+padL+'" y1="'+y(0)+'" x2="'+(W-padR)+'" y2="'+y(0)+'" stroke="#D6DBDF"/>' +
+    el('chart').innerHTML =
+      '<path d="'+pOuter+base+'" fill="'+view.outerColor+'"/>' +
+      '<path d="'+pInner+base+'" fill="'+view.innerColor+'"/>' +
+      '<line x1="'+padL+'" y1="'+y0+'" x2="'+(W-padR)+'" y2="'+y0+'" stroke="#D6DBDF"/>' +
       ticks +
       '<text x="'+padL+'" y="'+(H-5)+'" fill="#657580" font-size="8">1</text>' +
-      '<text x="'+(W-padR)+'" y="'+(H-5)+'" fill="#657580" font-size="8" text-anchor="end">'+n+' мес.</text>' +
-      '<line id="cross" x1="0" y1="'+padT+'" x2="0" y2="'+y(0)+'" stroke="#17232E" stroke-width="1" opacity="0"/>';
+      '<text x="'+(W-padR)+'" y="'+(H-5)+'" fill="#657580" font-size="8" text-anchor="end">'+endLabel+'</text>' +
+      '<line id="cross" x1="0" y1="'+padT+'" x2="0" y2="'+y0+'" stroke="#17232E" stroke-width="1" opacity="0"/>';
   }
 
   function setReadout(k){
-    var r = schedule[k];
-    if(!r) return;
-    readout.innerHTML =
-      'Месяц <b>'+r.m+'</b>' +
-      '<span>проценты <b>'+fmt0.format(r.interest)+' ₽</b></span>' +
-      '<span>основной долг <b>'+fmt0.format(r.principal)+' ₽</b></span>' +
-      '<span>остаток <b>'+fmt0.format(r.balance)+' ₽</b></span>';
+    var x = rows[k];
+    if (!x) return;
+    if (mode === 'credit'){
+      el('readout').innerHTML =
+        'Месяц <b>'+x.m+'</b>' +
+        '<span>проценты <b>'+fmt0.format(x.interest)+' ₽</b></span>' +
+        '<span>основной долг <b>'+fmt0.format(x.principal)+' ₽</b></span>' +
+        '<span>остаток <b>'+fmt0.format(x.balance)+' ₽</b></span>';
+    } else {
+      el('readout').innerHTML =
+        'Месяц <b>'+x.m+'</b>' +
+        '<span>вложено <b>'+fmt0.format(x.invested)+' ₽</b></span>' +
+        '<span>проценты <b>'+fmt0.format(x.balance - x.invested)+' ₽</b></span>' +
+        '<span>баланс <b>'+fmt0.format(x.balance)+' ₽</b></span>';
+    }
   }
 
+  var chart = el('chart');
   function pointerMove(e){
     var rect = chart.getBoundingClientRect();
     var cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    var ratio = clamp(cx/rect.width, 0, 1);
-    var k = Math.round(ratio*(schedule.length-1));
+    var k = Math.round(clamp(cx/rect.width, 0, 1) * (rows.length-1));
     setReadout(k);
-    var cross = document.getElementById('cross');
-    if(cross){
-      var W=340, padL=6, padR=6, n=schedule.length;
-      var xp = padL + (n<2 ? (W-padL-padR)/2 : k*(W-padL-padR)/(n-1));
-      cross.setAttribute('x1', xp); cross.setAttribute('x2', xp);
-      cross.setAttribute('opacity','0.35');
+    var cross = el('cross');
+    if (cross){
+      var xp = xAt(k, rows.length);
+      cross.setAttribute('x1', xp);
+      cross.setAttribute('x2', xp);
+      cross.setAttribute('opacity', '0.35');
     }
   }
   chart.addEventListener('mousemove', pointerMove);
-  chart.addEventListener('touchmove', pointerMove, {passive:true});
   chart.addEventListener('touchstart', pointerMove, {passive:true});
+  chart.addEventListener('touchmove', pointerMove, {passive:true});
   chart.addEventListener('mouseleave', function(){
-    var cross = document.getElementById('cross');
-    if(cross) cross.setAttribute('opacity','0');
+    var cross = el('cross');
+    if (cross) cross.setAttribute('opacity','0');
     setReadout(0);
   });
 
-  function drawTable(){
-    var html = '';
-    schedule.forEach(function(r){
-      html += '<tr><td>'+r.m+'</td><td>'+fmt0.format(r.payment)+'</td><td class="int">'+fmt0.format(r.interest)+
-              '</td><td>'+fmt0.format(r.principal)+'</td><td>'+fmt0.format(r.balance)+'</td></tr>';
+  // ---------- поля ввода ----------
+  function field(o){
+    var inp = el(o.input), rng = el(o.range);
+    function selectAll(){
+      setTimeout(function(){ try { inp.setSelectionRange(0, inp.value.length); } catch(e){} }, 0);
+    }
+    function show(){
+      var v = o.get();
+      inp.value = o.money ? fmt0.format(v) : String(v).replace('.', ',');
+      rng.value = clamp(v, +rng.min, +rng.max);
+      if (o.after) o.after();
+    }
+    inp.addEventListener('focus', selectAll);
+    inp.addEventListener('click', function(){ if (inp.selectionStart === inp.selectionEnd) selectAll(); });
+    inp.addEventListener('input', function(){
+      var typed = parseNum(inp.value);
+      if (o.money){
+        var pos = inp.selectionStart, len = inp.value.length;
+        o.set(clamp(Math.round(typed), o.min, o.max));
+        inp.value = fmt0.format(o.get());
+        var np = Math.max(0, pos + inp.value.length - len);
+        try { inp.setSelectionRange(np, np); } catch(e){}
+      } else {
+        if (inp.value.trim() === '' || (typed === 0 && o.min > 0)) return;  // ждём, пока допечатают
+        o.set(clamp(o.round(typed), o.min, o.max));
+      }
+      rng.value = clamp(o.get(), +rng.min, +rng.max);
+      if (o.after) o.after();
+      render();
     });
-    el('rows').innerHTML = html;
+    inp.addEventListener('blur', function(){ show(); render(); });
+    rng.addEventListener('input', function(){ o.set(+this.value); show(); render(); });
+    return show;
   }
 
-  // --- связка полей и ползунков ---
-  function syncFromFields(){
-    amountRange.value = clamp(state.S, +amountRange.min, +amountRange.max);
-    termRange.value   = clamp(state.y, +termRange.min, +termRange.max);
-    rateRange.value   = clamp(state.r, +rateRange.min, +rateRange.max);
+  var half = function(v){ return Math.round(v*2)/2; };
+  var cent = function(v){ return Math.round(v*100)/100; };
+
+  function cTermAfter(){
+    el('cTermUnit').textContent = yearWord(CREDIT.y);
+    el('cTermMonths').textContent = cMonths() + ' ' + payWord(cMonths());
   }
-  function showFields(){
-    amount.value = fmt0.format(state.S);
-    term.value = String(state.y).replace('.', ',');
-    rate.value = String(state.r).replace('.', ',');
-    el('termUnit').textContent = yearWord(state.y);
-    el('termMonths').textContent = months() + ' ' + payWord(months());
+  function dTermAfter(){
+    el('dTermUnit').textContent = yearWord(SAVE.y);
+    el('dTermMonths').textContent = dMonths() + ' ' + monthWord(dMonths());
+  }
+  function dPmtAfter(){
+    el('dPmtHint').textContent = fmt0.format(SAVE.pmt*12) + ' ₽ в год';
   }
 
-  // при тапе по полю выделяем значение целиком — набранное заменяет старое
-  [amount, term, rate].forEach(function(input){
-    var selectAll = function(){
-      setTimeout(function(){ try { input.setSelectionRange(0, input.value.length); } catch(e){} }, 0);
-    };
-    input.addEventListener('focus', selectAll);
-    input.addEventListener('click', function(){ if (input.selectionStart === input.selectionEnd) selectAll(); });
+  var showAll = [
+    field({input:'cAmount', range:'cAmountRange', money:true, min:1, max:1e12,
+           get:function(){return CREDIT.S;}, set:function(v){CREDIT.S=v;}}),
+    field({input:'cTerm', range:'cTermRange', round:half, min:1/12, max:30, after:cTermAfter,
+           get:function(){return CREDIT.y;}, set:function(v){CREDIT.y=v;}}),
+    field({input:'cRate', range:'cRateRange', round:cent, min:0, max:200,
+           get:function(){return CREDIT.r;}, set:function(v){CREDIT.r=v;}}),
+    field({input:'dAmount', range:'dAmountRange', money:true, min:0, max:1e12,
+           get:function(){return SAVE.S;}, set:function(v){SAVE.S=v;}}),
+    field({input:'dPmt', range:'dPmtRange', money:true, min:0, max:1e9, after:dPmtAfter,
+           get:function(){return SAVE.pmt;}, set:function(v){SAVE.pmt=v;}}),
+    field({input:'dTerm', range:'dTermRange', round:half, min:1/12, max:30, after:dTermAfter,
+           get:function(){return SAVE.y;}, set:function(v){SAVE.y=v;}}),
+    field({input:'dRate', range:'dRateRange', round:cent, min:0, max:100,
+           get:function(){return SAVE.r;}, set:function(v){SAVE.r=v;}})
+  ];
+
+  // ---------- капитализация ----------
+  var capHints = {
+    1:  'Проценты прибавляются к вкладу каждый месяц и дальше работают сами.',
+    3:  'Проценты копятся три месяца и прибавляются к вкладу в конце квартала.',
+    6:  'Проценты копятся полгода и прибавляются к вкладу в конце каждого полугодия.',
+    12: 'Проценты копятся весь год и прибавляются к вкладу в конце года.'
+  };
+  var capButtons = [].slice.call(document.querySelectorAll('[data-cap]'));
+  capButtons.forEach(function(b){
+    b.addEventListener('click', function(){
+      SAVE.cap = +b.getAttribute('data-cap');
+      capButtons.forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      el('capHint').textContent = capHints[SAVE.cap];
+      render();
+    });
   });
 
-  amount.addEventListener('input', function(){
-    var pos = amount.selectionStart, len = amount.value.length;
-    state.S = clamp(Math.round(parseNum(amount.value)), 1, 1e12);
-    amount.value = fmt0.format(state.S);
-    amount.setSelectionRange(Math.max(0, pos + amount.value.length - len), Math.max(0, pos + amount.value.length - len));
-    syncFromFields(); render();
-  });
-  term.addEventListener('input', function(){
-    var typed = parseNum(term.value);
-    if (term.value.trim() === '' || typed === 0) return;   // ждём, пока допечатают
-    state.y = clamp(Math.round(typed*2)/2, 1/12, 30);
-    el('termUnit').textContent = yearWord(state.y);
-    el('termMonths').textContent = months() + ' ' + payWord(months());
-    syncFromFields(); render();
-  });
-  term.addEventListener('blur', showFields);
-  rate.addEventListener('input', function(){
-    state.r = clamp(Math.round(parseNum(rate.value)*100)/100, 0, 200);
-    syncFromFields(); render();
-  });
-  rate.addEventListener('blur', showFields);
+  // ---------- переключатель режимов ----------
+  var tabs = {credit: el('tabCredit'), save: el('tabSave')};
+  var panels = {credit: el('panelCredit'), save: el('panelSave')};
+  function setMode(next){
+    mode = next;
+    for (var k in tabs){
+      tabs[k].setAttribute('aria-selected', k === next ? 'true' : 'false');
+      panels[k].hidden = (k !== next);
+    }
+    try { localStorage.setItem('calc-mode', next); } catch(e){}
+    render();
+  }
+  tabs.credit.addEventListener('click', function(){ setMode('credit'); });
+  tabs.save.addEventListener('click', function(){ setMode('save'); });
 
-  amountRange.addEventListener('input', function(){ state.S = +this.value; showFields(); render(); });
-  termRange.addEventListener('input',   function(){ state.y = +this.value; showFields(); render(); });
-  rateRange.addEventListener('input',   function(){ state.r = +this.value; showFields(); render(); });
+  var saved = null;
+  try { saved = localStorage.getItem('calc-mode'); } catch(e){}
 
-  showFields(); syncFromFields(); render();
+  showAll.forEach(function(fn){ fn(); });
+  setMode(saved === 'save' ? 'save' : 'credit');
 })();
 </script>
 <script>

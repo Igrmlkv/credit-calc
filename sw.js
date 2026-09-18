@@ -1,5 +1,5 @@
 // Кэш приложения. Поднимайте версию при любой правке файлов.
-const CACHE = 'credit-calc-v1';
+const CACHE = 'credit-calc-v2';
 const ASSETS = [
   './',
   './index.html',
